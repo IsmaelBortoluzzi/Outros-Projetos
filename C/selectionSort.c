@@ -13,21 +13,24 @@ void dellAll(Node **head, Node **prev) {
 
 	if(!*(head)) return;
 	int i = 0;
+	printf("\n\n");
 
 	Node *aux = *head;
 	while(aux->next != NULL) {
 		aux=aux->next;
 		if (aux->prev != NULL){
 			free(aux->prev);
-			//printf("- "); 
-			printf("%d ", i++); 
+			//printf("- ");
+			printf("%d ", i); 
+			i++;
 		}
 	}
 	if (aux!=NULL){
 		free(aux);
-		printf("%d ", i++); 
+		printf("%d ", i); 
 		//printf("- ");
 	}
+
 	*head = NULL;
 	*prev = NULL;
 }
@@ -94,6 +97,18 @@ void printInteger(Node **head){
 	while(aux!=NULL) {	
 		printf("%d ", aux->valor);	
 		aux=aux->next;
+	}
+
+}
+
+void printIntegerInversamente(Node **tail){
+
+	Node* aux;
+	aux = *tail;
+
+	while(aux!=NULL) {	
+		printf("%d ", aux->valor);	
+		aux=aux->prev;
 	}
 
 }
@@ -179,7 +194,7 @@ void swapHeadWithNext(Node ***head, Node **aux, Node **menor) {
 	(*aux)->next = menorNext;
 	(*aux)->prev = (*menor);
 	
-	if (!(*aux)->next)  (*aux)->next->prev = *aux;
+	if ((*aux)->next)  (*aux)->next->prev = *aux;
 	//else tail = menor 
 	
 	**head = *menor;
@@ -254,6 +269,7 @@ void swapTailWithPrev(Node ***tail, Node **aux) {
 	(**tail)->next = *aux;
 	(**tail)->prev->next = (**tail);
 	(*aux)->next = NULL;
+	(*aux)->prev = (**tail);
 	(**tail) = *aux;
 
 }
@@ -262,7 +278,7 @@ void selectionSort(Node **head, Node **tail) {
 
 	Node *aux = (*head);
 	Node *menor = menorValor(aux);
-	printf("%d\n", menor->valor);
+	//printf("%d\n", menor->valor);
 	
 	if(menor == aux){
 	} 
@@ -324,16 +340,16 @@ int main(void) {
 	//insertEnd(&head, &tail, 29);
 	//dellOne(&head, &tail, 5);
 
-	for (int i = 0; i<25; i++) {
+	for (int i = 0; i<5; i++) {
 		insertEnd(&head, &tail, rand()%1000);
 	}
 	//insertBeggining(&head, &tail, rand()%1000);
 
-	printInteger(&head);
+	printIntegerInversamente(&tail);
 	printf("\n");
 	selectionSort(&head, &tail);
 	printf("\n");
-	printInteger(&head);
+	printIntegerInversamente(&tail);
 	
 	printf("\n");
 	dellAll(&head, &tail);
