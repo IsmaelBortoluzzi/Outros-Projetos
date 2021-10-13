@@ -13,7 +13,7 @@ void dellAll(Node **head, Node **prev) {
 
 	if(!*(head)) return;
 	int i = 0;
-	printf("\n\n");
+	//printf("\n\n");
 
 	Node *aux = *head;
 	while(aux->next != NULL) {
@@ -21,7 +21,7 @@ void dellAll(Node **head, Node **prev) {
 		if (aux->prev != NULL){
 			free(aux->prev);
 			//printf("- ");
-			printf("%d ", i); 
+			//printf("%d ", i); 
 			i++;
 		}
 	}
@@ -329,28 +329,24 @@ void selectionSort(Node **head, Node **tail) {
 
 int main(void) {
 
+   	clock_t start, end;
 	srand(time(NULL));
 	Node *head=NULL, *tail=NULL;
 
-	//insertBeggining(&head, &tail, 992);
-	//insertBeggining(&head, &tail, 444);
-	//insertBeggining(&head, &tail, 633);
-	//insertBeggining(&head, &tail, 117);
-	//insertBeggining(&head, &tail, 617);
-	//insertEnd(&head, &tail, 29);
-	//dellOne(&head, &tail, 5);
-
-	for (int i = 0; i<5; i++) {
+	for (int i = 0; i<100000; i++) {
 		insertEnd(&head, &tail, rand()%1000);
 	}
-	//insertBeggining(&head, &tail, rand()%1000);
 
-	printIntegerInversamente(&tail);
+	//printInteger(&head);
 	printf("\n");
+	start = clock();
 	selectionSort(&head, &tail);
-	printf("\n");
-	printIntegerInversamente(&tail);
+	end = clock();
+	//printInteger(&head);
 	
+	double difMS = ((double)end-start)*1000/CLOCKS_PER_SEC;
+	printf("Tempo: %.0lf ms", difMS);
+
 	printf("\n");
 	dellAll(&head, &tail);
 	
