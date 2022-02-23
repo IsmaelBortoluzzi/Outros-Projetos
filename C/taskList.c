@@ -213,6 +213,7 @@ Task *initialLoad(Task *root, FILE *fp){
     int size = ftell(fp);
 
     if (size == 0) return root;
+    rewind(fp);
 
     while(!feof(fp)){
         
@@ -236,7 +237,8 @@ void finishExecution(Task *root, FILE *fp) {
     
     fprintf(fp,"%s\n", root->name);
     fprintf(fp,"%d\n",root->prioridade);
-    fprintf(fp,"%d/%d",root->entrega.day,root->entrega.month);
+    fprintf(fp,"%d/%d\n",root->entrega.day,root->entrega.month);
+
     finishExecution(root->left, fp);
     finishExecution(root->right, fp);
 
@@ -304,5 +306,6 @@ int main(int argc, char const *argv[]) {
 
     finishExecution(bst.root,fp);
     fclose(fp);
+
     return 0;
 }
