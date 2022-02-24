@@ -1,136 +1,102 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
-struct bebida {
+typedef struct {
+	
+    int day;
+	int month;
 
-   int code;
-   char name[30];
-   int volume;
-   float price;
-   int qtStock;
-   int isAlcoholic; // 0 - nope, 1 - yep
-   struct bebida *left, *right;
+} Date;
 
-};
-typedef struct bebida Bebida;
- 
+typedef struct REC {
+    
+    char name[50];
+    int prioridade;
+    Date entrega; 
+    struct REC *left, *right; 
+
+} Task;
+
 typedef struct {
 
-   Bebida *root;
+   Task *root;
 
 } BST;
 
-Bebida *createNode(Bebida *newNode) {
+
+Task *createNode(Task *newNode) {
     
-    newNode = (Bebida*) malloc(sizeof(Bebida));
+    newNode = (Task*) malloc(sizeof(Task));
     
-    printf("\nDigite o Codigo da Bebida: ");
-    scanf("%d", &newNode->code);
-    getchar();
-    
-    printf("Digite o nome da Bebida: ");
-    fgets(newNode->name, 30, stdin);
+    printf("Digite o nome da tarefa: "); getchar();
+    fgets(newNode->name, 50, stdin);
     strtok(newNode->name, "\n");
 
-    printf("Digite o volume da Bebida: ");
-    scanf("%d", &newNode->volume);
+    printf("Digite a prioridade da tarefa: "); 
+    scanf("%d", &newNode->prioridade); 
 
-    printf("Digite o preco da Bebida: R$");
-    scanf("%f", &newNode->price);    
-
-    printf("Digite a quantidade em estoque: ");
-    scanf("%d", &newNode->qtStock);
-
-    printf("E alcoolica? s/n ");
-    char condition; 
-    getchar();
-    scanf("%c", &condition);
-
-    if (toupper(condition) == 'S') newNode->isAlcoholic = 1;
-    else newNode->isAlcoholic = 0;
+    
+    printf("Digite a data da tarefa (dd/mm): ");
+    scanf("%d/%d", &newNode->entrega.day, &newNode->entrega.month);
 
     newNode->left = newNode->right = NULL;
 
     return newNode;
 }
 
-Bebida *addBebida(Bebida *root, Bebida *bebida) {
 
-    if(root==NULL) return bebida;
+Task *addTask(Task *root, Task *task) {
 
-    if(root->code == bebida->code) {
-        printf("Esta Bebida Ja Existe!\n");
-        return root;
+    if (root==NULL) return task;
+
+    if (strcmp(task->name, root->name) > 0) {
+
+        root->right = addTask(root->right, task);
     }
+    else {
 
-    if(bebida->code > root->code) {
-
-        root->right = addBebida(root->right, bebida);
-    }
-    else if (bebida->code < root->code) {
-
-        root->left = addBebida(root->left, bebida);
+        root->left = addTask(root->left, task);
     }
     return root;
 }
 
+
 void insert(BST *tree) {
-    Bebida *newNode = NULL;
+    Task *newNode = NULL;
 
     newNode = createNode(newNode);
-    tree->root = addBebida(tree->root, newNode);
+    tree->root = addTask(tree->root, newNode);
 }
 
-void buscarBebida(Bebida *root, int key) {
 
-    if (!root) {
-        printf("Esta Bebida Nao Existe");
-        return;
-    }
-    if(key > root->code) {
+Task* swap(Task* task, Task* sucessor) {
 
-        buscarBebida(root->right, key);
-    }
-    else if (key < root->code) {
-
-        buscarBebida(root->left, key);
-    }
-    else {
-        printf("Codigo: %d, %s, %dml, R$%.2f, %d unidades, %d\n", root->code, root->name, root->volume, root->price, root->qtStock, root->isAlcoholic);
-        return;
-    }
-
-}
-
-Bebida* swap(Bebida* bebida, Bebida* sucessor) {
-
-    bebida->code = sucessor->code;
-    strcpy(bebida->name, sucessor->name);
-    bebida->volume = sucessor->volume;
-    bebida->price = sucessor->price;
-    bebida->qtStock = sucessor->qtStock;
-    bebida->isAlcoholic = sucessor->isAlcoholic;
+    strcpy(task->name, sucessor->name);
+    task->prioridade = sucessor->prioridade;
+    task->entrega.day = sucessor->entrega.day;
+    task->entrega.month = sucessor->entrega.month;
     
-    return bebida;
-} 
+    return task;
+}
 
-Bebida* excluirBebida(Bebida *root, int key) {
+
+Task* excluirTask(Task *root, char* key) {
 
     if (!root) {
-        printf("Esta Bebida Nao Existe");
+        printf("Esta Tarefa Nao Existe");
         return root;
     }
 
-    if(key < root->code) {
+    if (strcmp(key, root->name) < 0) {
 
-        root->left = excluirBebida(root->left, key);
+        root->left = excluirTask(root->left, key);
         return root;
     } 
-    else if (key > root->code) {
+    else if (strcmp(key, root->name) > 0) {
 
-        root->right = excluirBebida(root->right, key);
+        root->right = excluirTask(root->right, key);
         return root;
     }
     
@@ -138,13 +104,13 @@ Bebida* excluirBebida(Bebida *root, int key) {
 
     if (!(root->left)) {
 
-        Bebida *aux = root->right;
+        Task *aux = root->right;
         free(root);
         return aux;
     } 
     else if(!(root->right)) {
 
-        Bebida *aux = root->left;
+        Task *aux = root->left;
         free(root);
         return aux;
     }
@@ -152,9 +118,9 @@ Bebida* excluirBebida(Bebida *root, int key) {
 
         // Iremos achar o menor node da right subtree para poder fazer 
         //o swap com o node a ser excluido. Depois damos um free(menor)
-        Bebida *paiSucessor = root; 
+        Task *paiSucessor = root; 
 
-        Bebida *sucessor = root->right;
+        Task *sucessor = root->right;
         while (sucessor->left) {
             paiSucessor = sucessor;
             sucessor = sucessor->left;
@@ -170,78 +136,101 @@ Bebida* excluirBebida(Bebida *root, int key) {
     }
 }
 
-void inOrder(Bebida *root) {
+void buscarTask(Task *root, char* key) {
+
+    if (!root) {
+        printf("Esta Tarefa Nao Existe");
+        return;
+    }
+
+    if (strcmp(key, root->name) < 0) {
+
+        buscarTask(root->left, key);
+
+    } 
+    else if (strcmp(key, root->name) > 0) {
+
+        buscarTask(root->right, key);
+
+    }
+    else {
+        printf("Tarefa: %s\nPrioridade: %d\nData: %d/%d\n", root->name, root->prioridade, root->entrega.day, root->entrega.month);
+        return;
+    }
+
+}
+
+
+Task *updateTask(Task *root, char* key) {
+     
+    if (!root) {
+        printf("Esta Tarefa Nao Existe");
+        return root;
+    }
+    if (strcmp(key, root->name) < 0) {
+
+        root->left = updateTask(root->left, key);
+        return root;
+    } 
+    else if (strcmp(key, root->name) > 0) {
+
+        root->right = updateTask(root->right, key);
+        return root;
+    }
+    else {
+        Task aux;
+        puts("Prioridade: ");    
+        scanf("%d", &aux.prioridade);
+
+        puts("Data (dd/mm): ");  
+        scanf("%d/%d", &aux.entrega.day, &aux.entrega.month);
+        getchar(); 
+        
+        root->prioridade = aux.prioridade;
+        root->entrega.day = aux.entrega.day;
+        root->entrega.month = aux.entrega.month;
+
+        return root;
+    }
+}
+
+
+void inOrder(Task *root) {
 
     if (!root) return;
 
     inOrder(root->left);
-    printf("Codigo: %d, %s, %dml, R$%.2f, %d unidades, %d\n", root->code, root->name, root->volume, root->price, root->qtStock, root->isAlcoholic);
+    printf("Tarefa: %s\nPrioridade: %d\nData: %d/%d\n\n", root->name, root->prioridade, root->entrega.day, root->entrega.month);
     inOrder(root->right);
 }
 
-void preOrder(Bebida *root) {
 
-    if (!root) return;
+Task *initialLoad(Task *root, FILE *fp){
 
-    printf("Codigo: %d, %s, %dml, R$%.2f, %d unidades, %d\n", root->code, root->name, root->volume, root->price, root->qtStock, root->isAlcoholic);
-    preOrder(root->left);
-    preOrder(root->right);
+    if (!fp) return root;
+    
+    fseek (fp, 0, SEEK_END);
+    int size = ftell(fp);
+
+    if (size == 0) return root;
+    rewind(fp);
+
+    while(!feof(fp)){
+        
+        Task *newTask = malloc(sizeof(Task));
+        fgets(newTask->name, 50, fp); 
+        strtok(newTask->name, "\n");
+        fscanf(fp, "%d", &newTask->prioridade);
+        fscanf(fp, "%2d/%2d", &newTask->entrega.day, &newTask->entrega.month);
+        fgetc(fp);
+        root = addTask(root, newTask);
+
+    }
+
+    return root;
 }
 
-void delTree(Bebida *root) {
-
-    if (!root) return;
-
-    delTree(root->left);
-    delTree(root->right);
-    free(root);
-    printf("-");
-}
-
-void comprarOuVenderBebida(Bebida *root, int key, int quant, char cv) {
-
-    // cv = comprar ou vender
-
-    if (!root) {
-        printf("Bebida Nao Encontrada!\n");
-        return;
-    }
-    if (key > root->code) {
-
-        comprarOuVenderBebida(root->right, key, quant, cv);
-    }
-    else if (key < root->code) {
-
-        comprarOuVenderBebida(root->left, key, quant, cv);
-    }
-    else {
-
-        if (cv == 'c') {
-            root->qtStock += quant;
-            return;
-        }
-
-        else if (cv == 'v') {
-
-            if (quant > root->qtStock) {
-                printf("Existem apenas %d deste item no estoque!\n", root->qtStock);
-                return;
-            }
-            root->qtStock -= quant;
-        }
-    }
-}
-
-void countNodes(Bebida *root, int *contagem) {
-
-    if (!root) return;
-
-    (*contagem)++;
-    countNodes(root->left, contagem);
-    countNodes(root->right, contagem);
-}
-
-void saveTreeInVector(Bebida* root, Bebida **vector, int *index) {
+void saveTreeInVector(Task* root, Task **vector, int *index) {
 
     if (!root) return;
 
@@ -251,7 +240,7 @@ void saveTreeInVector(Bebida* root, Bebida **vector, int *index) {
 
 }
 
-Bebida *rebuildTree(Bebida **vector, int leftIndex, int rightIndex) {
+Task *rebuildTree(Task **vector, int leftIndex, int rightIndex) {
 
     if(leftIndex > rightIndex) return NULL;
 
@@ -262,103 +251,89 @@ Bebida *rebuildTree(Bebida **vector, int leftIndex, int rightIndex) {
     return vector[mid];
 }  
 
-void rebalanceTree(BST *tree) {
+void finishExecution(BST *tree,  FILE *fp) {
 
     int contagem = 0;
     countNodes(tree->root, &contagem);
 
-    int tamanho = contagem*sizeof(Bebida*);
-    Bebida **vector = (Bebida**) malloc(tamanho);
+    int tamanho = contagem*sizeof(Task*);
+    Task **vector = (Task**) malloc(tamanho);
 
-    contagem = 0; // reusando a var pro track do index
-    saveTreeInVector(tree->root, vector, &contagem);
+    int index = 0;
+    saveTreeInVector(tree->root, vector, &index);
 
-    tree->root = rebuildTree(vector, 0, (int) (tamanho/sizeof(Bebida*))-1);
-    free(vector);
-}
+    tree->root = rebuildTree(vector, 0, (int) (tamanho/sizeof(Task*))-1);
 
-int main(void) {
-
-    BST tree; tree.root = NULL;
-
-    int option = -1, numInserts = 0;
-    while(option) {
-
-        puts("\nDigite 1 para cadastrar uma Bebida;");
-        puts("Digite 2 para listar as Bebidas;");
-        puts("Digite 3 para procurar por uma Bebida;");
-        puts("Digite 4 para excluir uma Bebida;");
-        puts("Digite 5 para comprar uma Bebida;");
-        puts("Digite 6 para vender uma Bebida;");
-        puts("Digite 0 para sair do sistema;");
-        scanf("%d", &option);
-        printf("\n");
-        int cdg, quantidade, idade;
-
-        switch (option) {
-
-            case 1:
-            
-                insert(&tree);
-                numInserts++;
-                if(!(numInserts % 10)) rebalanceTree(&tree);
-                break;
-            
-            case 2:
-                
-                inOrder(tree.root); break;
-            
-            case 3:
-                
-                printf("Digite o codigo da bebida que deseja procurar: ");
-                scanf("%d",  &cdg);
-                buscarBebida(tree.root, cdg);
-                break;
-            
-            case 4:
-                
-                printf("Digite o codigo da bebida que deseja excluir: ");
-                scanf("%d",  &cdg);
-                tree.root = excluirBebida(tree.root, cdg);
-                numInserts--;
-                break;
-
-            case 5:
-
-                printf("Digite o codigo da bebida que deseja comprar: ");
-                scanf("%d",  &cdg);
-                printf("Digite a quantidade de bebida que deseja comprar: ");
-                scanf("%d",  &quantidade);
-                comprarOuVenderBebida(tree.root, cdg, quantidade, 'c');
-                break;
-            
-            case 6:
-
-                printf("Qual a idade? ");
-                scanf("%d", &idade);
-                if(idade < 18) {
-                    puts("Sem gole por enquanto"); 
-                    break;
-                }
-                
-                printf("Digite o codigo da bebida que deseja vender: ");
-                scanf("%d",  &cdg);
-                printf("Digite a quantidade de bebida que deseja vender: ");
-                scanf("%d",  &quantidade);
-                comprarOuVenderBebida(tree.root, cdg, quantidade, 'v');
-                break;
-            
-            case 0: break;
-
-            default:
-            
-                puts("Opcao Invalida!!!");
-                break;
-        }
+    for (index = 0; contagem < index; contagem++) {
+        fprintf(fp,"%s\n", tree->root->name);
+        fprintf(fp,"%d\n",tree->root->prioridade);
+        fprintf(fp,"%d/%d\n",tree->root->entrega.day, tree->root->entrega.month);
     }
 
-    delTree(tree.root); tree.root = NULL;
-    puts("\nSistema Desligando...");
+    free(vector);
+    freeTree(tree);
+}
+
+
+int menu() {
+    int op=0;
+    puts("1 Inserir nova tarefa");
+    puts("2 Deletar tarefa");
+    puts("3 Atualizar tarefa");
+    puts("4 Consultar tarefa");
+    puts("5 Listar tarefas");
+    printf("6 Finaliza\n");
+    printf("\n: ");
+    scanf("%d", &op);
+    return op;
+}
+
+
+int main(int argc, char const *argv[]) {
+    int op = 0;
+    BST bst; 
+    bst.root = NULL;
+    FILE *fp = fopen(argv[1], "r");
+    bst.root = initialLoad(bst.root, fp);
+
+
+    while (op!=6) {
+
+        op=menu();
+        
+        if (op==1) {
+            insert(&bst); printf("\n");
+        }
+        else if (op==2) { 
+            char key[50]; 
+            puts("Tarefa a excluir: "); getchar();
+            fgets(key, 50, stdin); strtok(key, "\n");
+            bst.root = excluirTask(bst.root, key);  printf("\n");
+        }
+        else if (op==3) {
+            char key[50];
+            puts("Tarefa a modificar: "); getchar();
+            fgets(key, 50, stdin); strtok(key, "\n");
+            bst.root = updateTask(bst.root, key);  printf("\n");
+        }
+        else if (op==4) {
+            char key[50];
+            puts("Tarefa a procurar: "); getchar();
+            fgets(key, 50, stdin); strtok(key, "\n");
+            buscarTask(bst.root, key);  printf("\n");
+        }
+        else if (op==5) {
+            inOrder(bst.root);  printf("\n");
+        }
+
+    }
+
+    fclose(fp);
+    fp = fopen(argv[1],"w");
+    rewind(fp);
+
+    finishExecution(bst.root,fp);
+    fclose(fp);
 
     return 0;
 }
